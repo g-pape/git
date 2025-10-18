@@ -128,7 +128,17 @@ case "${1:-.}${2:-.}${3:-.}" in
 		;;
 	esac
 
-	git merge-file "$src1" "$orig" "$src2"
+	strategy=$(git check-attr -z merge "$4" | tr "\0" "\t" | cut -f3)
+	case "$strategy" in
+	ours|theirs|union)
+		resolveas="--$strategy"
+		;;
+	*)
+		resolveas=
+		;;
+	esac
+
+	git merge-file $resolveas "$src1" "$orig" "$src2"
 	ret=$?
 	msg=
 	if test $ret != 0 || test -z "$1"
